@@ -1,13 +1,6 @@
-# מערכת תורנויות — Full Fix
+# מערכת תורנויות — גרסה סטטית עובדת
 
-גרסה זו קוראת את Google Sheet הציבורי ללא Apps Script וללא fetch/CORS.
+הנתונים מוטמעים ב-data.js מתוך קובץ Excel המעודכן.
+אין תלות ב-Google Sheets, Apps Script, OAuth, CORS או חשבון Google בזמן פתיחת האתר.
 
-GIDs:
-- הגדרות: 1667977560
-- שבוע 1: 371077633
-- שבוע 2: 849710887
-- חופשות: 726984650
-
-הטעינה נעשית דרך Google Visualization JSONP (script injection), ולכן אינה תלויה בחשבון Google המחובר בדפדפן ואינה דורשת Google Cloud/OAuth.
-
-הקוד גם מציג במקרה תקלה את שם הלשונית שנכשלה, כדי שאפשר יהיה לאבחן בעיה בלי לנחש.
+כדי לפרסם: העלו את index.html, style.css, app.js ו-data.js ל-root של ה-repository.

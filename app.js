@@ -54,26 +54,9 @@ function tableToRows(table){
 
 // JSONP / script injection: no browser CORS fetch is used.
 function getSheet(name){
- return new Promise((resolve,reject)=>{
-   const cb='__duty_gviz_'+Date.now()+'_'+Math.random().toString(36).slice(2);
-   const script=document.createElement('script');
-   const timer=setTimeout(()=>finish(new Error(`פג זמן הטעינה: ${name}`)),12000);
-   function finish(err,data){
-     clearTimeout(timer); try{delete window[cb]}catch{}; script.remove();
-     err?reject(err):resolve(data);
-   }
-   window[cb]=response=>{
-     if(!response || response.status==='error'){
-       let msg=response?.errors?.map(x=>x.detailed_message||x.message).join(' | ')||'Google לא החזיר נתונים';
-       return finish(new Error(`${name}: ${msg}`));
-     }
-     finish(null,tableToRows(response.table));
-   };
-   script.onerror=()=>finish(new Error(`לא ניתן לטעון את הלשונית ${name}`));
-   const tqx=encodeURIComponent(`responseHandler:${cb};out:json`);
-   script.src=`${PUB}/gviz/tq?gid=${GIDS[name]}&headers=0&tqx=${tqx}&t=${Date.now()}`;
-   document.head.appendChild(script);
- });
+ const data=window.DUTY_DATA?.[name];
+ if(!data) return Promise.reject(new Error(`נתונים חסרים: ${name}`));
+ return Promise.resolve(data);
 }
 
 const dayOffset={'שני':0,'שלישי':1,'רביעי':2,'חמישי':3,'ראשון':6};
