@@ -7,15 +7,34 @@ const GIDS={
   'שבוע 2':'849710887',
   'חופשות':'726984650'
 };
-function csvUrl(sheet){return `${PUB}/pub?output=csv&gid=${GIDS[sheet]}`}
-function parseCSV(text){
- let rows=[],row=[],v='',q=false;
- for(let i=0;i<text.length;i++){let c=text[i],n=text[i+1];
-  if(q){if(c=='"'&&n=='"'){v+='"';i++}else if(c=='"')q=false;else v+=c}
-  else if(c=='"')q=true;else if(c==','){row.push(v);v=''}else if(c=='\n'){row.push(v.replace(/\r$/,''));rows.push(row);row=[];v=''}else v+=c}
- row.push(v.replace(/\r$/,''));if(row.some(x=>x!==''))rows.push(row);return rows
+function getSheet(name){
+ return new Promise((resolve,reject)=>{
+  const gid=GIDS[name];
+  if(!gid){reject(new Error(`GID חסר: ${name}`));return}
+  const cb='dutySheet_'+gid+'_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+  const script=document.createElement('script');
+  const timer=setTimeout(()=>finish(new Error(`פג זמן הטעינה: ${name}`)),15000);
+  function finish(err,value){
+   clearTimeout(timer);
+   try{delete window[cb]}catch(_){window[cb]=undefined}
+   script.remove();
+   err?reject(err):resolve(value);
+  }
+  window[cb]=(response)=>{
+   try{
+    if(!response || response.status==='error') throw new Error(response?.errors?.[0]?.detailed_message || `שגיאת Google: ${name}`);
+    const table=response.table;
+    const headers=(table.cols||[]).map(c=>c.label||c.id||'');
+    const rows=(table.rows||[]).map(r=>(r.c||[]).map(c=>c==null?'':(c.f!=null?c.f:(c.v!=null?c.v:''))));
+    finish(null,[headers,...rows]);
+   }catch(e){finish(e)}
+  };
+  script.onerror=()=>finish(new Error(`לא ניתן לטעון את ${name}`));
+  const base='https://docs.google.com/spreadsheets/d/e/2PACX-1vTFeOPTzASKdYE5f7KWeMXNwN8wGvoPKWgtekpHVuhbp7MGIzB43-dvwiP7oZwqPof7peerLWq_cJ-D/gviz/tq';
+  script.src=`${base}?gid=${gid}&headers=1&tqx=${encodeURIComponent('responseHandler:'+cb)}`;
+  document.head.appendChild(script);
+ })
 }
-async function getSheet(name){let r=await fetch(csvUrl(name),{cache:'no-store'});if(!r.ok)throw Error(name);return parseCSV(await r.text())}
 function norm(s){return String(s||'').trim().replace(/\s+/g,' ')}
 function people(cell){return String(cell||'').split(/\n|,|;/).map(norm).filter(Boolean)}
 function iso(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
