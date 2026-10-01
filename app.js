@@ -2,7 +2,12 @@ const PUB='https://docs.google.com/spreadsheets/d/e/2PACX-1vTFeOPTzASKdYE5f7KWeM
 const $=s=>document.querySelector(s);
 let duties=[], rowsByWeek={1:[],2:[]}, holidays=[];
 
-function csvUrl(sheet){return `${PUB}/pub?output=csv&sheet=${encodeURIComponent(sheet)}`}
+const GIDS={
+  'שבוע 1':'371077633',
+  'שבוע 2':'849710887',
+  'חופשות':'726984650'
+};
+function csvUrl(sheet){return `${PUB}/pub?output=csv&gid=${GIDS[sheet]}`}
 function parseCSV(text){
  let rows=[],row=[],v='',q=false;
  for(let i=0;i<text.length;i++){let c=text[i],n=text[i+1];
